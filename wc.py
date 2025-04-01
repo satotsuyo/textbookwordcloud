@@ -16,6 +16,7 @@ keyword = st.text_input("中心語を入力してください:")
 
 # 中心語が入力された場合のみ処理を実行
 if keyword:
+    # 縦に4つのグラフを配置するための設定
     fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(10, 20))
 
     for i, (url, title) in enumerate(urls_and_titles):
@@ -23,28 +24,34 @@ if keyword:
         if response.status_code == 200:
             text = response.text
         else:
-            print(f"エラー: {title} のテキストデータを取得できませんでした。")
-        continue
+            st.error(f"エラー: {title} のテキストデータを取得できませんでした。")
+            continue
 
-    words = text.split()
-    context_words = []
-    for idx, word in enumerate(words):
-        if word == keyword:
-            start = max(0, idx - 3)
-            end = min(len(words), idx + 4)
-            context_words.extend(words[start:idx] + words[idx+1:end])
+        # テキストを単語に分割して中心語の周辺語を抽出
+        words = text.split()
+        context_words = []
+        for idx, word in enumerate(words):
+            if word == keyword:
+                # 前後3語を取得（範囲外の場合を考慮）
+                start = max(0, idx - 3)
+                end = min(len(words), idx + 4)
+                context_words.extend(words[start:idx] + words[idx+1:end])
 
-    context_text = " ".join(context_words)
+        # 周辺語をスペースで連結してテキスト化
+        context_text = " ".join(context_words)
 
-    if not context_text:  # context_text が空の場合の処理
-        print(f"'{keyword}' に関連する語が見つかりませんでした。")
-        continue
+        # context_text が空の場合の処理
+        if not context_text:
+            st.warning(f"'{keyword}' に関連する語が見つかりませんでした（{title}）。")
+            continue
 
-    # ワードクラウド生成
-    word_cloud = WordCloud(width=800, height=400, background_color='white', max_words=200).generate(context_text)
+        # ワードクラウドを生成
+        word_cloud = WordCloud(width=800, height=400, background_color='white', max_words=200).generate(context_text)
 
+        # ワードクラウドをプロット
         axes[i].imshow(word_cloud, interpolation="bilinear")
         axes[i].set_title(title, fontsize=16)
         axes[i].axis("off")
 
+    # Streamlitでプロットを表示
     st.pyplot(fig)
