@@ -19,11 +19,11 @@ if keyword:
     fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(10, 20))
 
     for i, (url, title) in enumerate(urls_and_titles):
-    response = requests.get(url)
-    if response.status_code == 200:
-        text = response.text
-    else:
-        print(f"エラー: {title} のテキストデータを取得できませんでした。")
+        response = requests.get(url)
+        if response.status_code == 200:
+            text = response.text
+        else:
+            print(f"エラー: {title} のテキストデータを取得できませんでした。")
         continue
 
     words = text.split()
