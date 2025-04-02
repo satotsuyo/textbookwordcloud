@@ -2,6 +2,16 @@ import streamlit as st
 import requests
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet
+import nltk
+
+# 必要なデータをダウンロード
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+
+# レンマタイザの初期化
+lemmatizer = WordNetLemmatizer()
 
 # テキストデータのURLとタイトル
 urls_and_titles = [
@@ -16,6 +26,9 @@ keyword = st.text_input("中心語を入力してください:")
 
 # 中心語が入力された場合のみ処理を実行
 if keyword:
+    # レンマタイゼーションで中心語を原形に変換
+    keyword_lemma = lemmatizer.lemmatize(keyword.lower())
+
     # 縦に4つのグラフを配置するための設定
     fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(10, 20))
 
@@ -27,11 +40,11 @@ if keyword:
             st.error(f"エラー: {title} のテキストデータを取得できませんでした。")
             continue
 
-        # テキストを単語に分割して中心語の周辺語を抽出
-        words = text.split()
+        # テキストを単語に分割して原形に変換
+        words = [lemmatizer.lemmatize(word.lower()) for word in text.split()]
         context_words = []
         for idx, word in enumerate(words):
-            if word == keyword:
+            if word == keyword_lemma:
                 # 前後3語を取得（範囲外の場合を考慮）
                 start = max(0, idx - 3)
                 end = min(len(words), idx + 4)
